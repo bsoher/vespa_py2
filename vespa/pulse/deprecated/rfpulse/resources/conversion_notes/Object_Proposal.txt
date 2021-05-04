@@ -1,0 +1,186 @@
+Rfpulse : Object Design
+
+
+class PulseProject:
+    self.name             = ''
+    self.creator          = ''       
+    self.description      = ''
+    self.designed         = None     # or self.designed
+    self.version          = ''       # Version of code used to generate this pulse
+    self.comment          = ''       # User's notes for describing this pulse.
+    
+    self.rf_pulse = None             # An RfPulse object.
+    self.frequency_profile = None    # FreqProfile Object, from applying Bloch equations, etc.
+    self.other_profiles = None       # e.g. extended frequency profile, etc.    
+    
+    self.gradient = 0.0              # For Linear Gradient
+    self.gradient_waveform  = None   # Gradient object 
+    self.refocusing_gradient = 0.0   # double
+                                     # We will save refocusing gradient as a number 
+                                     # i.e. a % of gradient that needs to be inverted and
+                                     # applied.  If a user want to do more than that, they will
+                                     # have to apply concatenation, etc....
+                                 
+
+    self.F2_frequency_waveform = None  # F2 - carrier frequency. units; kiloHertz (kHz).
+                                       # ...to stay in same slice.
+                                       # same x_axis as gradient.
+                                       # MOVE INTO Gradient Object ???
+        
+    self.sample_info = None             # A SampleInfo object.
+    self.machine_settings = None        # MachineSettings object.
+    self.master_parameters = None       # MasterParams object.
+    self.provenance  = None             # A Provenance Object    
+
+    
+class Gradient:
+    gradient_waveform = None  # If exists, we have a "G2". units; milliTesla/Meter
+    gradient_waveform_x_axis  # Units of time; milliSeconds.
+
+    
+class FreqProfile:
+    frequency_profile_type   # enum [ My, MINUS_My, Mxy, Mz ]
+    frequency_profile        # units; -1 to 1 (+/- a little for wiggles; normalized units)
+    frequency_profile_x_axis  # units; milliSeconds.
+
+    
+class RFPulse:	
+    waveform               # set of complex numbers. units; microTesla
+    waveform_x_axis        # Units of time; milliSeconds.
+        
+class ConcatenatedPulseProject (PulseProject):
+    pulse_list   # A list of pulses used to create this one in time order.
+                 # NOTE: fist item in the list of transformations will be 
+                 # the concatenation that created this pulse.
+
+        
+class PulseParams - subclasses:
+   SLRPulseParams
+   AnalyticPulseParams  # For [sinc_gaussian, gaussian, hyperbolic_secant (adiabatic) ]
+
+   
+class PulseParams:
+    self.algorithm   # enum [slr, Analytic]
+    self.usage_type  # enum [excite, inversion, spinecho, saturation] ==> Mx,Mxy,Mz ? -YES    
+    self.tip_angle    = 90.0        # in degrees
+    self.time_steps   = 256         # number of points: 
+                                    # In MATPULSE, thers is an assumed point at value of zero.
+                                    # Keep this implicit point at zero?  Any Machine effects?
+    self.dwell_time   = 0.1         # micro-seconds 
+    self.duration     = 8.0         # milliseconds : duration = dwell_time * time_steps 
+    self.bandwidth    = 1000.0      # Hz
+    self.separation   = 1000.0      # Hz, Used only for dual band pulses.    
+    self.single_band  = True        # or False for dual band
+    self.phase_type                 # enum [linear, coalesced, non-coalesced]
+
+   
+class SLRPulseParams:
+    self.use_remez    = True        # or False
+    self.slr_phase_subtype          # enum[min, max, other]
+    self.pass_ripple    = 1.0       # percentage
+    self.reject_ripple  = 1.0       # percentage
+
+    
+class AnalyticPulseParams:
+    sub_type            # enum [Sinc_gauss, Gaussian, Hyperbolic_Secant (Adiabatic)]
+    is_non_selective    # true of false.  If true, then "range" needs to be non_zero
+    bandwidth_range     # A percent. Look over +/- range for calculating bandwidth.
+    cycles              # Number of cycles. Only makes sense for a Sinc_gauss
+    filter_type         # enum [Cosine, Hanning, Gaussian]
+    filter_application  # a percentage - "how much" the filter is applied.
+    # points            # number of points for this pulse.  DUPLICATE IN BASE ?? - YES
+    # dwell_time        # in microSeconds. MAY DUPLICATE VALUE IN BASE ?? -YES
+    # bandwidth         # in KHz. MAY DUPLICATE VALUE IN BASE ?? - YES
+    
+    
+class SampleInfo:
+	T1 = Inf         # A number between 0 and infinity (Inf)
+ 	T2 = Inf    
+	flow
+	B1_inhomogeneity
+    resonance_offset   # could be caused by B0 inhomogeneity, or chemical shifts, or...
+
+
+class MachineSettings:
+	self.field_strength   # 1.5,3,4,7 etc. Tesla
+	self.machine_type     # None, Seimans, SIMS, GE, Varian, etc.
+    self.zero_padding = 0      
+	self.min_dwell_dime      
+    self.dwell_time_increment    
+    self.gradient_raster_time    # e.g. 5 microSeconds for some Sieman machines.
+	self.gradient_slew_rate      # In units of (mT/meter)/second
+
+
+class MasterParams:
+    self.max_B1_field      # in microTesla
+    self.calc_resolution   # num_points for Bloch and rfpulse profile calculations.
+    self.pulse_bandwidth_convention    # half-height, top, bottom.
+
+
+class Provenance:
+  	transformation_list  # list of {transformation, TransformationParams} pairs.
+
+
+Class Transformation:  # an Enumeration.  Do we need this or just ust Trans...Params??
+    CREATE_PULSE = 1  
+ 	IFSR = 2 # Interpolation, Filtering, Scaling, Resampling
+    REMAPPING = 3
+	ROOT_REFLECTION = 4
+	GRADIENT_REFOCUSING = 5
+	OPTIMAL_CONTROL = 6
+	PULSE_CONCATENATION = 7    # after we concatenate a PulseProject, can we still apply 
+						       # the other types of transformations? -- YES
+                               # i.e. do we need to think of a ConcatenatedPulse as a type
+                               # of rfpulse or as a new kind of object. -- Type of rfpulse.   
+                               #
+                               # What are the Minimum number of things that need to be
+                               # the same to concatinate (if anything).  Or just flag it as
+                               # a warning if different dwell_times, and/or field_strength
+                               # or machine_type, etc  ????
+                            
+
+class TransformationParams
+
+TransformationParams - sublasses:
+    IFSRParams
+    RemapParams
+    RootReflectionParams
+    GradientRefocusParams
+    OptimalControlparams   # NOTE: Could start with random noise for this.
+    PulseConcatParams
+    PulseCreateParams
+
+
+class IFSRParams:  # Interpolation, Filtering, Scaling, Resampling
+        
+    
+More Questions:
+
+
+Can we do operations that require a B2,G2, if we have not generated one yet?  --NO
+
+Will we want to propogate forward though the next transformation out state of 
+B1,G1,B2,G2; T1,T2, Flow, output; output options; extended vs not extended ? -- YES
+
+What about units of profile (propagate forward) ?
+
+As you progress through the transformations, do you need to know what the original 
+inputs to the design were, and/or how much of that information do you need. -- No. NOT REALLY ?
+I.e. is it single or dual band, slr method, desired angle of tip, excitation or 
+inversion, etc.
+
+If we have a refocusing gradient and we peform a remapping (creating a G2), do we 
+change the refocusing gradient, or is that along a different axis, so we are in fact 
+creating a new gradient along another axis, giving us 2 gradients?  -- NOT REALLY HANDLING
+REFOCUSING GRADIENT OTHER THAN AS A SINGLE NUMBER. BUT, CAN ADD A WAVEFORM VIA PULSE
+CONCATENATION
+
+How does G1 differ from G2?  Is G1 just the linearly varying slice-selective 
+field (constant gradient)?  -- YES, AND G2 CAN BE A COMPLICATED WAVEFORM.
+
+Should we create a meta-object that contains : rfpulse, gradient, freq_profile, [F2], 
+provenance, machine_settings, master_params, and system_settings. -- YES.
+
+
+
+

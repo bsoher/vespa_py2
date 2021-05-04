@@ -1,0 +1,43 @@
+Matlab Menu Items
+
+Top Level:
+
+Master Parameters
+RF Pulses
+Optimal Control
+Special
+Figures
+
+
+Master Parameters -->
+  Master Parms
+  
+RF Pulses -->
+  SLR Pulse Generation
+  Filtering, Scaling
+  Bloch Equations
+  Pulse Import
+  
+Optimal Control -->
+  OC Non-Selective, B1-Immune
+  OC Selective, B1-Immune
+  Contour Plot of B1-Immunity
+  
+Special -->
+  Grad Refocus
+  Relaxation
+  Bloch Equa w Flow
+  Test Pulses
+  Root Reflect
+  Pulse Re-Map
+  Concatenate
+  Siemens Save
+  SMIS Save
+  
+Figures -->
+  Close all but 1st 1
+  Retain 1st 2 figs
+  Retain 1st 3 figs
+  Retain 1st 4 figs
+  Close Selected
+
