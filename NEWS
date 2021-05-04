@@ -1,0 +1,1058 @@
+Version 0.10.0 - 7 October 2019
+------------------------------------------------------------------------------
+NOTE - Backwards Incompatibility Notice !!!! Read below.
+
+This version has new dependency requirements from previous versions. It uses 
+matplotlib = 2.2.3 and wxpython >= 4.0.4 due to an inability to load the 
+previous versions anymore through the 'conda' command.  All Vespa application
+performance and data formats are still backwards compatible. Most of the 
+changes (and maybe bugs) are in the code for the plotting and application GUI.
+
+In addition to these updates, Vespa now requires that you have the lmfit and
+pypubsub packages installed.
+
+To update a conda installation you should just have to type the following
+command at an Anaconda Command Window prompt:
+
+>conda install wxpython==4.0.4 matplotlib==2.2.3
+
+and then,
+
+>pip install lmfit pypubsub
+
+ANALYSIS - Added separate fitting constraint ranges for 'large' and 'small'
+metabolites, which can be set in the constants.py file. Small Metabolite 
+constraints can be disabled and all metabolites use just the 'large' settings.
+
+
+Version 0.9.11rc2 - 7 May 2019
+------------------------------------------------------------------------------
+This is a placeholder version only. Just prior to going to version 0.10.0
+which has more up to date Matplotlib and wxPython which require some base
+infrastructure code rejiggering.
+
+This version was to create a branch only.  I'm not going to release this 
+because my main issue right now is that miniconda2 will no longer let me 
+install matplotlib=1.5.3 or wxpython=3.0.0 from the standard channels. I went
+looking for alternate channels but could not find good alternatives for Win64
+bit installations.  SO I bit the bullet and started the conversion towards
+Python 3.x.  I'm doing this in two steps. First, I'll stay with Python 2.7.15
+or whatever the latest 2.7.x is and just use the latest wxpython and matplotlib
+for that.  4.0.4 and 2.2.3 as of this note. I'll get these working and then
+eventually make the switch to Python 3.x
+
+Added LMFIT constrained optimization fitting module, BUT it is not turned on 
+in the GUI. This adds new parameter boundary and constraints code. Set up to 
+keep NAAG->NAA, PCHO->GPC, GLC->TAU PCR->xx and PCR2->xx2 and maybe one more.  
+Also set up Fit and Quant results to calculate metabolite sums, like Cr+Pcr, 
+NAA+NAAG, etc. as in LCModel.
+
+This has Philips DICOM MRS file parsing.  Both single file and summed fids
+
+
+Version 0.9.10 - 10 December 2018
+------------------------------------------------------------------------------
+This is a bugfix for GE Pfile reading. 
+
+
+Version 0.9.9 - 07 December 2018
+------------------------------------------------------------------------------
+This is a bugfix for version 0.9.8, I call it a lesson in OOPs programming.
+
+
+Version 0.9.8 - 05 December 2018
+------------------------------------------------------------------------------
+This is mainly a bugfix release - thanks to our users for the feedback
+
+Analysis
+- A few small bugfixes in output menus
+- Small tweaks to the GUI to make widgets fit better on a laptop screen 
+
+Simulation
+- reworked the Binning code normalization based on a GAMMA library call, same
+  effective algorithm, just a different source of information
+
+
+Version 0.9.7 - 29 September 2018
+------------------------------------------------------------------------------
+Priorset
+
+Analysis
+- WatRef Quant tab now has View->Output menu option to output current or all 
+  voxels to CSV format. This is a shortcut for when multiple files are 'loaded
+  into the screen'. Note, the shortcut button on the screen will only save
+  the current voxel to CSV file.
+- Bugfix in WatRef Quant tab when multiple data files are loaded 'into the screen'
+- Significant refactoring for acquiring import data parsing objects. No longer 
+  the GUI modules, they can be called fairly simply from a CLI script, at least  
+  for the 'standard' data formats (Siemens DICOM, RDA, GE Probe, etc.)
+
+Priorset
+- bugfix in About popup
+- Added Siemens *.rda formatted output for single spectrum results. This will 
+  allow people to put this data into LCModel and other programs that support this  
+  this data format.
+
+
+Version 0.9.6 - 12 September 2018
+------------------------------------------------------------------------------
+Analysis
+- Bugfix for Siemens *.dcm file parsing. This is an actual DICOM Mr Spectroscopy
+  Container SOP Class rather than the typical *.IMG MRI header hack. 
+- Updated GE Pfile parser for v26.0 file reading
+- Preset Tab now has coil combine functionality in GUI. Made Siemens algorithm
+  the default, as it has been in all the parser code to date. 
+- Voigt Fitting tab now has a menu item to save results from all voxels at once
+  to CSV format if you have loaded two or more datasets 'into the screen'. This 
+  is under View->ResultsToFile->Text-CSV Layout->Current/All Voxels menu 
+- Renamed Voigt tab button from "Batch Fit All Voxels" to "Batch Process All Voxels"
+- Added functionality to "Batch Process All Voxels" button in Voigt tab to check 
+  for parameter validity (ie. all widgets properly set for batch run). 
+- WatRef algorithm had a bug in it. It's now in line with the algorithm set up 
+  for the ISMRM MRS Workshop "Fitting Challenge". 
+- Quant tab now has a "Batch Process All Voxels" button as well.
+ 
+Simulation
+- Exception error messages generated within a pulse sequence will be displayed
+  (at least partially) on the GUI status bar.
+
+Version 0.9.5 - 22 September 2017
+------------------------------------------------------------------------------
+This is release has a couple of major additions and some minor add-ons as well.
+
+Analysis 
+- Voigt Fitting tab now has a button to Fit All Voxels. So if you have loaded 
+  two or more datasets 'into the screen', you can fit them all with the current
+  settings by hitting this button.
+- Voigt Fitting tab results can now be output from the menu in 1 of 3 standard
+  output figure layouts into PDF or PNG files. This includes one layout that 
+  is similar to a certain other fitting program whose initial might be LCM.
+- Preprocess tab with individual FID data now allows you to manually exclude 
+  data by index. This includes manually selecting indices or interactively 
+  toggling indices on/off in a X-Y plot of magn/phase/shift data. Documentation
+  has been updated to explain how best to apply this.
+- Added functionality to Preprocess tab to change individual FID spectrum (top) 
+  plot to whatever index was selected with the middle mouse button while 
+  excluding data.
+- Spectral tab, SVD sub-tab now has the ability to select all lines within a 
+  start/end ppm range. This can be used to exclude lipid signals or other 
+  unwanted lines.
+- Can now read GE PROBE data up to Pfile v25 software.
+- Updated Analysis User Manual with more info on Data Exclusion and the 
+  algorithms for Freq and Phase0 correction and Coil Combine.
+
+Pulse
+- Found a bug in Pulse tranform kernel Import from File and created a new version 
+  v1.1 of that kernel. 
+- Added functionality in the Manage Tranform Kernels dialog to NOT display kernels
+  in the selection list if they have been deprecated. I have also set a number of 
+  older, example, kernels as now being deprecated so long as I have replaced them
+  with newer versions. All kernels can be listed by un-checking the box at the top
+  of the dialog.
+  
+Simulation
+- Clicking on the contour plot (in Visualize sub-tab) will change the 1D plot 
+  display to the x,y location clicked on.
+
+Version 0.9.4 - 1 November 2016
+------------------------------------------------------------------------------
+This release has four new added features. 1) Analysis - updated to read GE Probe
+MRS files up to version 24 software. 2) Analysis - some Linux 64-bit distributions
+were having trouble using the HLSVDPro fortran library, so I created a native
+python/scipy workaround for those situations. 3) Simulation - fixed GUI bugs that 
+defaulted to minimum range values, now uses default values. 4) Pulse - added 
+functionality to provide a system gamma (nuclei gyromagnetic ratio value) for
+use in transform kernels and the Bloch simulation engine. This required an 
+update to the database, which leaves all the original transform kernels in the
+database, but adds new versions that use the system gamma value.
+
+
+
+Version 0.9.3 - 29 July 2016
+------------------------------------------------------------------------------
+This is primarily a bugfix release. Simulation Pulse Sequence Editor dialog was
+hanging when a sequence with more than 2 external real RF pulse were involved.
+Solution was to update GridSizer rows as RF pulses added to gui.
+
+
+
+Version 0.9.2 - 6 July 2016
+------------------------------------------------------------------------------
+This is primarily a bugfix release. Just a few GUI missteps, and some unnecessary
+variables in a processing chain.
+
+
+
+Version 0.9.1 - 17 May 2016
+------------------------------------------------------------------------------
+Ooops. Found out too late that PyPI will not let you upload a version more 
+than once.  So, we uploaded version 0.9.0 and then needed a bit more updating
+and, and, and ... SO, our first 64-bit release will now be version 0.9.1 
+instead.
+
+
+
+Version 0.9.0 - 17 May 2016
+------------------------------------------------------------------------------
+This release officially marks Vespa's switch over to development under 64-bit
+Python. We have updated our dependencies to more recent versions, particularly
+for wxPython. We are also now distributing Vespa via PyPI using wheels. And
+we moved the HLSVDPro functionality out into its own PyPI distributed module.
+
+We have included two new utilities, get_python_info.py and check_dependencies.py, 
+to help users install or upgrade Vespa as a 64-bit application with new minimum
+version requirements.
+
+Most of the code changes within this release were due to file reorganization to 
+simplify distribution by wheel. Also, we proactively fixed a number of warnings
+about future deprecation issues. 
+
+
+
+Version 0.8.6 - 21 March 2016
+------------------------------------------------------------------------------
+This release officially replaces RFPulse with the Pulse application. Read 
+below for more details on how this affects your installation and future plans.
+If for any reason you need to convert back to Version 0.8.5, the upgrade 
+creates a backup of your database that you can simply rename, and then 
+reinstall version 0.8.5 zip/tar files.
+
+We introduced Pulse as a standalone application for people to try out and 
+report bugs in release 0.8.5. Here in release 0.8.6, it officially becomes the 
+?RF pulse application? in Vespa. In doing this, we transfer all results 
+from RFPulse to Pulse in order to maintain backwards compatibility. We also 
+update the database to tell Vespa-Simulation to get RF pulse results used 
+in PulseSequence objects from the Pulse application not RFPulse. 
+
+As part of version 0.8.6 release, the upgrade code converted and transferred 
+all RFPulse PulseProject objects into Pulse PulseDesign objects. Each of these 
+converted PulseDesign objects has an 'Import from RFPulse' transform kernel 
+that contains the waveform, gradient and time axis information from the final 
+RFPulse transformation object that was converted. This information is encoded 
+in 'xdr zlib base64' formats similarly to what we push numpy arrays into in 
+our XML outputs. When the Run button is pushed in the PulseDesign Tab, these 
+byte strings are converted back into rf waveform, gradient and time axis array 
+results in the PulseDesign object.
+
+We structured the upgrade/conversion of RFPulse results into Pulse in this 
+manner to ensure that we are still able to provide Vespa-Simulation 
+PulseSequence objects that use real RF pulses with the waveforms that they 
+expect. However, this method of upgrade means that we lose the information 
+about how the pulse was created originally in RFPulse. This was deemed 
+sufficient for backward compatibility in this case.
+
+Although RFPulse is deprecated, it will remain part of the Vespa package for 
+the foreseeable future. It will remain as a ?standalone? application in that 
+its results can not be used upstream in Vespa-Simulation as part of a 
+PulseSequence. The main reason to leave it at all is to allow users to revisit 
+previously created PulseProject objects to see how pulses were created.
+
+
+Version 0.8.5 - 26 February 2016
+------------------------------------------------------------------------------
+This has two major parts. First, There has been a major refactor and file 
+cleanup of Analysis and some parts of the Common directory. The second part 
+is that I am releasing an *alpha* version of the Pulse application.
+
+Pulse is slated to replace the RFPulse application at some point in the future.
+It has all the functionality of RFPulse, with the added benefit that users
+can now add their own waveform creation algorithms using an internal Waveform 
+Kernel Editor dialog functionality, rather than having to develop new methods
+externally in native Python as for RFPulse. Upgrading to 0.8.5 will add Pulse 
+tables and example results to the Vespa database, but will NOT change any 
+existing results for RFPulse that are already in the database. 
+
+In this release, Pulse is fully functional, but in a standalone mode. You can 
+try out the provided RF pulse waveforms, save results and reload them, and add
+your own mehtods if you like.  But, you can NOT yet use them 'upstream' in a 
+Simulation Experiment. 
+
+I am planning on swapping out RFPulse for Pulse in the next major release 
+(knock wood), though there may yet be a couple of minor releases to fix bugs
+first. At that time I will provide a method for transferring RFPulse
+results to make them available within Pulse. Please feel free to comment on 
+whether you use RFPulse or not, and how best you think we might port results
+to the Pulse application.
+
+Analysis has undergone a refactor to make it easier to add on future 
+functionality. However, it is possible that in combining some of the files we
+have inadvertently created some bugs. Other bugs that users reported previously
+have been fixed. Thanks to everyone who sent us bug reports and please let us 
+know if you find any new ones!
+
+
+
+Version 0.8.4 - 11 June 2015
+------------------------------------------------------------------------------
+This release fixes a bug in the Preprocess tab for Fidsum data. It also adds 
+some additional functionality and a Preprocess tab specific for WBNAA data.
+
+
+
+Version 0.8.3 - 30 April 2015
+------------------------------------------------------------------------------
+This release fixes a bug that prevents Vespa from creating a default database
+when a new user installs for the first time. The error was caused by the
+change in v0.8.2 where we moved simulation binning code into native Python.
+We had to change some of the characters in the code into Unicode literals
+to keep the XML parser happy when reading the example Experiments and
+Pulse Sequences into the default database.  
+
+Otherwise, no significant changes.
+
+
+
+Version 0.8.2 - 17 April 2015
+------------------------------------------------------------------------------
+As usual, release fixes a few minor bugfixes to the display and menu items 
+which were reported by our users. Thanks to all who take the time to report
+these and work with us to find and fix them. 
+
+There are 2 significant changes that I summarize here and document in more
+detail at the end of the file.
+
+ANALYSIS - API Change - the API for the Analysis data parser template has 
+been changed to add flexibility for future data formats. This change is 
+backwards compatible, but we highly encourage users to adopt the new format. 
+
+SIMULATION - New Normalization Algorithm - there is a new algorithm for 
+normalizing the results from a spectral simulation in Simulation. The previous 
+method worked fine for all metabolites that only had 1H resonances in them. It 
+only failed for heteronuclear metabolites whose non-1H isotopes have 
+spins > 1/2. The new algorithm is now set to be the default. Users are 
+encouraged to check their previous Experiments to determine if any of their 
+results could be affected by issues with the previous normalization method.
+A full explanation and examples of the problem and its resolution are 
+shown in Appendix E of the Analysis User Manual.
+
+Additional details of these issues are given at the end of the list of smaller
+changes below.
+
+The following changes are listed below by application.
+
+ANALYSIS ----------------------------------------------
+
+Extension, added the option in the Voigt metabolite model to fix the T2 values 
+for each individual metabolite, essentially using a modified Gaussian lineshape.
+
+Extension, added an algorithm to auto phase the individual phases of the FidSum 
+datasets. Added widgets to establish the ppm range over which to optimize the 
+real part of each FID to the summed spectra of all unphased FIDs. 
+
+Extension, added a Macromolecule tab to the Voigt Fitting tab. The first 
+algorithm we've added supports the use of another loaded dataset as a single 
+add-in basis function to the metabolite dataset.
+
+Extension, added support for Siemens VD series SVS data.
+
+Extension, added initial phase 0 prior to peak search to allow for UTE data 
+with Phase 1 differences between each peak
+
+RFPULSE -----------------------------------------------
+
+Extension, added a Gradient Plot to the base transformation panel. This will 
+facilitate adding pulse algorithms that have time varying gradients.
+
+Refactor, simplified the calls to run bloch simulations and how we store and 
+retrieve these results and x-axis values.  I was able to get rid of one entire 
+objec mrs_raw_bloch_profiles.py which was one level too much abstraction.
+
+Refactor, aligned all the Create pulse transforms to same basic template.  
+Synched the wxGlade files and Python output file names. This should make it 
+easier to add new Create classes since they all now follow a more coherent 
+coding template.
+
+COMMON -------------------------------------------------
+
+Refactor, Renamed the RFPulse objects to an "rfp_xxx.py" format.  
+
+
+Details for Significant Changes ------------------------
+
+Change #1 - ANALYSIS - The API for one method in the template class 
+RawReader() has been modified. This is the class from which we sub-class all 
+of our parser modules for reading various data formats into Analysis.
+
+We added  *args, **kwargs  to the read_raw() method (in fileio/raw_reader.py 
+module). At the moment the only extra keyword being sent in is a list of 
+open_datasets. This allows user extension readers to access any open dataset 
+in Analysis within their own file parser classes. 
+
+It's quite simple to update previously written parsers, just add an additional 
+keyword argument to the existing parser. That is, in your new class method 
+just change:
+
+    def read_raw(self, filename, ignore_data=False): 
+to
+    def read_raw(self, filename, ignore_data=False, *args, **kwargs):
+
+This change provides an important flexibility going forward to check what type 
+of data is already available. 
+
+There is also a new OpenFileUserReadRawError exception that users can raise 
+to signal a problem in reading data in a read_raw() method in their own reader 
+classes. This will allow a reader extension class to fail politely rather than 
+crash the application.
+
+
+Change #2 - SIMULATION - We have moved the default binning code into Python 
+rather than using the GAMMA TTable1D::calc_spectra() method. The new Python 
+code replicates the functionality of the GAMMA call, but has a new scheme for 
+scaling the transition table lines to account now for both homonuclear AND 
+heteronuclear resonances within the spin_system being simulated.
+
+A big thanks to Dr. Roland Kreis for reporting this issue. He showed that 
+in a very simple experiment (One-Pulse) that if a trimethyl metabolite (such 
+as phosphorylethanolamine, that has a 14N spin in its spin_system definition) 
+that has a non-1H/non-spin 1/2 isotope attached is simulated, then the 
+multiplet structure has an incorrect vertical scale. The ratio between the 
+lines in the resonance pattern are correct, but the overall vertical scale 
+was too large.  
+
+Note. This issue only occurs if the non-1H spin was also not spin 1/2 like 1H 
+is. So, for example, metabolites with 1H and 31P spins within their spin_system 
+(like GPC-gp) had correct normalization because 31P is also spin 1/2
+
+The easiest workaround has been to remove the non-1H spin and re-run the sim.
+
+We have found that the issue was in the scaling being perfomed in the binning
+code after the simulation is finished but before the results were being stored
+in the Vespa database. Our previous binning code was made to a GAMMA routine 
+called TTable1D::calc_spectra(). This method included a step for scaling due to
+homonuclear spins equal to normal = 0.5 * pow(2.0,(ns-1)) where ns = number of
+spins.  This still works fine for metabolites in simulations that only have 1H
+spins or if the non-1H spins are all spin 1/2.
+
+After a great deal of digging, we have developed a new normalization 
+calculation, but this is only based on empirical evidence, not on physical 
+principles. This factor is now based on the quantum spin number for each spin 
+and the ratio between these spin numbers and the observe isotope.  
+
+We have replaced the binning code in the examples and created a new example
+specifically with the new binning code for you to examine and use as a template
+for new simulations. At this time we have NOT changed any code in the GAMMA
+library.
+
+This code change will not affect existing simulations in your database, but you
+may want to go back and check to see if any of the metabolites you simulated 
+contained isotopes that are not spin 1/2.
+
+
+Version 0.8.1 - 17 July 2014
+------------------------------------------------------------------------------
+As usual, release fixes a few minor bugfixes to the display and menu items 
+which were reported by our users. Thanks to all who take the time to report
+these and work with us to find and fix them.
+
+This has been a particularly long hiatus between releases for no particular
+reason other than available time to organize one. Changes to specific apps
+are reported below.
+
+RFPULSE --------------
+
+Added option to the Third Party Output to save rf pulse envelope 
+as a text file in IDEA C HEADER format. This can then be directly imported 
+into sequence code and used as an object in special rf pulse declarations.
+
+Added fields to the Third Party Export dialog so user can enter Bandwidth 
+and Flip Angle values if none are passed to the dialog from the Pulse 
+Project. This is typically the case with "imported" rf pulse text files.
+
+ANALYSIS -------------
+
+Extended Spectral Tab to allow user to specify a specific function 
+for the button on the bottom of the control panel. Current selections include 
+AutoPhase and current AreaValueOutput. This is set from the View menu User 
+Button Function submenu. The Area Value Output button will take the currently
+calculated area under the cursor span and append it to a comma separated 
+variable file whos name the user selects.
+
+Added a truncation-filter method for initial value area corrections. This is 
+in the Inital Values tab of the Voigt tab. This filter applies an N point
+truncation to the data before searching for peak heights as initial correlates
+to peak starting areas. Height estimates are boot-strapped back to Zero point 
+truncation by the algorithm to account for T2* decay at N point truncation.
+
+Added Preset functionality to allow users to save processing/fitting settings
+from an existing dataset tab out to a 'preset' file. And subsequently, reload 
+these setting and apply them to another dataset. This is a convenience function
+only at the present but may prove useful in creating a standalone command line
+interface in the future.
+
+PRIORSET -------------
+
+Added Phase1 and Phase1 pivot widgets to the DISPLAY ONLY of 
+Priorset spectrum. This is to better understand Gradient Echo ultra-short 
+TE EPSI data acquisitions with delays before the FID data is taken.
+
+Added left shift widget to Spectral Settings tab. This modification is shown 
+both on the data plotted to screen and that saved to file.
+
+Added View->OutputExperimentText option to menu bar to display Experiment in
+a text window similarly to that shown in Vespa-Simulation.
+
+
+
+
+Version 0.8.0 - 20 August 2013
+------------------------------------------------------------------------------
+This version adds the functionality to deal with spectrally edited pulse 
+sequence simulations. In these sequences, the simulation creates an On and Off
+state for the editing pulses, and a post-processing step in Vespa-Simulation
+will now perform the necessary Add (On+Off) or Subtract (On-Off) steps needed
+to create basis functions for use in fitting edited MRS data. Please see the
+Simulation User manual Section 2.2 for further details.
+
+To help users understand how to use this feature, there is a MEGA-PRESS pulse
+sequence simulation that has been uploaded on the Vespa Contributions web page
+https://scion.duhs.duke.edu/vespa/contrib/wiki/PulseSequences
+that demonstrates the Siemens svs_edit implementation.
+
+In Vespa-Analysis you can now save fitting results to a comma separated text
+file format for import into Excel or elsewhere.
+
+Also in this release are a few minor bugfixes to the display and menu items.
+
+
+
+
+Version 0.7.6 - 18 July 2013
+------------------------------------------------------------------------------
+This version fixes two annoying GUI bugs thanks to the help of our users. 
+
+The only functional change is in Analysis where I added an "Output to CSV" 
+button to Fitting-Results tab so users can collate multiple results into 
+one Excel readable file.
+
+
+
+
+Version 0.7.5 - 05 July 2013
+------------------------------------------------------------------------------
+This version fixes a number of small display bugs in Analysis and provides
+two new major improvements in Analysis.
+
+The first major change in Analysis is in loading a basis set in the Fitting
+tab from the database. This option now uses the GUI from Vespa-Simulation for
+output to a Third Party Format which allows users a number of options to 
+modify the raw results as they come into Analysis. Users can add mixtures 
+of metabolites (e.g. glutamate+glutamine at 5:1 ration to create Glx) to the
+basis set. They can split metabolite basis values apart based on a PPM range.
+And metabolite basis results can be scaled to account for the use of any 
+truncated chem-shift/J-coupling settings.
+
+The second major change is a dialog that allows users to modify the User 
+Defined Metabolite Information. This information set is used to map 
+non-standard metabolite names that may be used in Vespa-Simulation Experiments
+to standard names so that the Fitting tab uses the proper algorithms to set
+the initial values. It also provides literature values for concentration that
+can be used by the initial values routines to estimate starting ares for small
+concentration metabolite via a ratio to NAA.
+
+Multi-plot displays in the Fitting tab now display properly for either Summed
+or Individual plot options. 
+
+For Developers: I now have a pathway for importing, displaying, fitting and 
+saving edited SVS MRS data working for Siemens svs_edit WIP.  This can be used
+as a template for other editing pulse sequence imports and workflows.  Please
+contact me directly if you have a data type for which you want to create an 
+import path.
+
+
+
+
+Version 0.7.4 - 20 June 2013
+------------------------------------------------------------------------------
+This version fixes a number of small (but annoying) bugs in Analysis and 
+RFPulse. It also continues to improve the GE PROBE-P file import based on 
+user feedback.  
+
+
+
+
+Version 0.7.3 - 18 April 2013
+------------------------------------------------------------------------------
+In Analysis, we have added an option to read data in GE PROBE-P file format.  
+This is still in alpha, due to a lack of various files to test it on. 
+So, please report any issues in using it and we can better optimize the code.
+This version reads data from single or multi-coil data acquisitions. If data
+is multi-coil, the FIDs are summed for all coils individually, then each 
+coil's FID is phase corrected based on the first point on the unsuppressed
+water signal, then all coils are added together without weighting.
+
+
+
+
+Version 0.7.2 - 15 April 2013
+------------------------------------------------------------------------------
+This release fixes some minor bugs and adds a few new features.
+
+In RFPulse, there is now the option to display Magnitude and Phase plots on 
+the results canvas of each tab.
+
+In Analysis, we have added an option to read Bruker files in the JCAMPDX data
+format.  This is still in alpha, due to a lack of various files to test it on. 
+So, please report any issues in using it and we can better optimize the code.
+At the moment, we have code to read JCAMPDX 4.x and 5.x versions for 1D SVS
+data.
+
+In Simulation, there was an issue with LCModel Third Party Output. This was 
+fixed by enclosing IDs and FMDAT fields in single quotes. This is now done 
+automatically by the program, and no user input is necessary.
+
+
+
+
+Version 0.7.1 - 26 February 2013
+------------------------------------------------------------------------------
+This release fixes a major bug in Analysis caused by the architecture change
+in version 0.7.0, but that did not occur until multiple files were loaded. 
+This has been fixed and multiple datasets can now be loaded and displayed
+correctly.
+
+
+
+
+Version 0.7.0 - 30 January 2013
+------------------------------------------------------------------------------
+This release contains a few bug fixes and features a significant change in
+Analysis.
+
+In Analysis, we have added a Preprocess tab.  This will serve to allow users
+to perform any necessary pre-processing of data after Raw tab and prior to 
+the Spectral tab. E.g. Users can sum up FID data from multiple files into
+a single FID for processing. Note that this functionality used to be allowed
+in the Raw sub-tab, but is now moved into the Preprocess tab for clarity. All
+the Raw tab does now is display raw data file names and header information.
+
+We made a significant re-organization under the hood in how the Analysis 
+objects interact. Blocks, Chains, and Tabs are all now separated, and are 
+organized programmatically using ordered dictionaries rather than lists. This
+allows us to access specific Block/Chain/Tab objects more directly rather
+than having to search. It should allow simpler expansion in the future as well.
+
+Fixed bugs in the HTML output, zerofill changes in functors and a few others 
+in how data is displayed in the plots.
+
+
+
+
+Version 0.6.4 - 10 January 2013
+------------------------------------------------------------------------------
+This release contains a few bug fixes and features a significant change in
+Analysis.
+
+In Analysis, the Basic tab (on which one edited Auto Prior information) has 
+been removed in favor of a dialog box available from the Processing menu.
+In addition Auto Prior has been renamed to User Prior.
+
+One of the bugs fixed was that saved Auto/User Prior information was 
+accidentally discarded when read from a VIFF file. If you have wondered why
+your changes didn't seem to be saved, now you know.
+
+
+
+
+Version 0.6.3 - 18 December 2012 
+------------------------------------------------------------------------------
+This release fixes a few minor (but annoying!) bugs.
+
+
+
+
+Version 0.6.2 - 25 October 2012
+------------------------------------------------------------------------------
+This release fixes a bug in Simulation output reported by a great user. We 
+also updated a few output points in Analysis.
+
+
+
+
+Version 0.6.1 - 24 October 2012
+------------------------------------------------------------------------------
+This release features a number of additional changes and fixes "under the hood".
+The main visible change is in the plots on each tab in Analysis. We have 
+centralized the code that controls all the settings from the View menu items
+and this now allow us to provide users with the option of plotting individual
+and summed results in certain plots. In particular, on the SVD Filter tab in
+Analysis Spectral and all plots in the Analysis Fit tabs.
+
+Some other changes --
+- We have further extended the ability for users to import their own data. We
+now provide a Philips Summed FID option. 
+
+- We added more functionality for users who want to write their own Python code 
+to import multiple datasets from one data file.
+
+
+
+
+Version 0.6.0 - 24 September 2012
+------------------------------------------------------------------------------
+This release features a lot of changes and fixes "under the hood". The main 
+visible change is in Analysis. The SVD tab has become a sub-tab of the
+Spectral tab. This more accurately reflects its place in the processing steps.
+
+Some other changes --
+- We made a big change to the way Vespa stores preferences. Some preferences 
+will be lost when upgrading to this version.
+
+- In Simulation, we removed the menu items View/Black on White and 
+View/White on Black since they didn't behave as advertised.
+
+- In Analysis, we made it easier for others to write importers for formats
+that we don't (yet) support.
+
+
+
+
+Version 0.5.3 - 21 August 2012
+------------------------------------------------------------------------------
+This release fixes a number of bugs and offers one new feature: Vespa no longer
+restricts the characters that one can use in the name of an object (experiment, 
+pulse project, metabolite, etc.).
+
+We fixed bugs in several places in Vespa, but Analysis received the most
+prominent fixes. They are --
+- The HLSVD tab didn't work under Windows 7; we fixed that.
+
+- Boolean menu items (like View/X-Axis) broke in version 0.5.2; they're
+working once again.
+
+- We fixed some scale-related bugs.
+
+
+
+
+Version 0.5.2 - 31 July 2012
+------------------------------------------------------------------------------
+This release fixes some small bugs and adds better support for reading DICOM
+files produced by Siemens VD-series software.
+
+In addition, this is the first version to drop Python 2.5 support. Vespa 
+probably still works with it, but we no longer test under Python 2.5.
+
+
+
+
+Version 0.5.1 - 9 July 2012
+------------------------------------------------------------------------------
+This maintenance release fixes several bugs related to our newest 
+applications: Analysis and Priorset.
+
+
+
+
+Version 0.5.0 - 2 July 2012
+------------------------------------------------------------------------------
+We are pleased to announce the release of Vespa 0.5.0 which contains the first
+release of Priorset, the fourth application in the Vespa suite. Priorset allows
+one to create simulated MRS datasets using prior information from a Vespa-
+Simulation experiment.
+
+Another significant change is that we replaced Analysis' HLSVD filter with an
+implementation that is a little faster, a little more robust, and a little more
+accurate. Analysis now initially sorts HLSVD's numeric results by rank (instead
+of frequency).
+
+Due to the switch to the new HLSVD implementation, Analysis <= 0.4.2 won't be
+able to read datasets created by Analysis >= 0.5.0. Newer versions of Analysis
+can read datasets created by older ones, though.
+
+Also, Linux users have a new dependency to install. Please see the new
+installation instructions: 
+http://scion.duhs.duke.edu/vespa/project/wiki/Installation#FFTWRuntimeLibraryLinuxOnly
+
+In addition to the changes above, this release contains a number of small
+enhancements and bug fixes.
+
+
+
+
+Version 0.4.2 - 7 June 2012
+------------------------------------------------------------------------------
+In addition to the usual small enhancements and bug fixes, this version
+contains two important changes --
+
+- Analysis can now import Philips SPAR/SDAT files.
+
+- We fixed a bug where saving some Analysis datasets would fail on 64-bit 
+platforms.
+
+
+
+Version 0.4.1 - 1 June 2012
+------------------------------------------------------------------------------
+This version fixes two bugs. First, it fixes a packaging problem that broke
+ECC and water filters in Analysis. Second, it fixes a Simulation bug that 
+occurred when creating 3rd party output from a new experiment that had not 
+yet been saved to the database.
+
+
+
+Version 0.4.0 - 30 May 2012
+------------------------------------------------------------------------------
+We are very pleased to announce the release of Analysis, the third application 
+in the Vespa suite. Analysis allows one to interactively read, process and 
+analyze MR spectroscopic data.
+
+In addition, this release contains a number of small enhancements and bug fixes.
+One specific change worth mentioning is that Simuation's 3rd party export 
+dialog now allows users to choose to export a specific simulation rather
+than always exporting the first simulation.
+
+
+
+Version 0.3.3 - 15 February 2012
+------------------------------------------------------------------------------
+In addition to the usual small enhancements and bug fixes, this version
+contains the first alpha release of Analysis. In order to limit the alpha
+test population, we won't announce this version on the Vespa mailing list.
+ 
+
+
+Version 0.3.2 - 24 January 2012
+------------------------------------------------------------------------------
+This release fixes an unintended dependency introduced in Vespa 0.3.1 that
+prevents most users from running Simulation.
+
+
+
+Version 0.3.1 - 19 January 2012
+------------------------------------------------------------------------------
+In addition to the usual small enhancements and bug fixes, this version
+contains one important new feature --
+
+- RFPulse has a new general transformation that implements optimal control
+(non-coalesced). Optimal control is an optimization method for creating large
+sweep width RF excitation/inversion pulses of short duration. See the RFPulse
+user manual for more information, or ask questions on the Vespa mailing list:
+http://tech.groups.yahoo.com/group/vespa-mrs/
+
+In addition, we added a create transformation that generates a randomized
+pulse in the range of +/- 1 microTesla. Randomized pulses are often a useful
+starting point for optimal control.
+
+
+
+Version 0.3.0 - 27 October 2011
+------------------------------------------------------------------------------
+
+This release contains some significant new features and fixes.
+
+The main new feature is that Simulation's pulse sequences can now reference
+the "real" pulses in RFPulse pulse projects. The new example pulse sequence
+"PRESS with RFPulse Pulses" demonstrates the technique. 
+
+Also in Simulation -- 
+
+- We added the attribute "observe_isotope" to the simulation description. It
+  contains the isotope selected for observation in the experiment (e.g. "1H",
+  "31P", etc.). This allows pulse sequence code to be nuclei agnostic.
+
+- We added a restriction that metabolites and pulse sequences may not be
+  edited or deleted while an experiment is being edited. This fixes a number
+  of obscure and difficult bugs.
+
+In RFPulse -- 
+
+- When creating a pulse by importing a file, one can now specify a maximum
+  intensity or a scaling factor.
+
+- The 3rd party export dialog now offers an annotated ASCII format. It's the
+  same as plain ASCII but with a comment block at the top.
+
+- The 3rd party export used to normalize the waveform when exporting to ASCII.
+  It no longer does that.
+
+- The 3rd party export dialog now prompts for bandwidth when exporting to
+  Siemens IDEA and Vision formats.
+
+Last but not least, we fixed a significant logic bug that has been in Vespa
+since the beginning. Vespa correctly marked objects (e.g. an experiment)
+public after an export, but not referenced objects (e.g. the metabolites and
+pulse sequence in the experiment). It now marks the referring and referenced
+objects public after an export.
+
+
+
+Version 0.2.6 - 27 September 2011
+------------------------------------------------------------------------------
+In addition to the usual small enhancements and bug fixes, this version
+fixes the data deletion bug introduced in the previous version (0.2.5) which
+made it unsafe to delete Gaussian pulse projects. It is now safe to delete
+them.
+
+This version also contains some new features in RFPulse --
+
+- One can create a pulse by importing the waveform from a file. 
+
+- We added the ability to do gradient refocusing.
+
+- The user manual contains documentation for Gaussian pulses.
+
+
+
+Version 0.2.5 - 12 September 2011
+------------------------------------------------------------------------------
+In addition to the usual small enhancements and bug fixes, this version
+contains one important new feature --
+
+- RFPulse can create Gaussian pulses in addition to SLR and Hyperbolic-Secant.
+
+There is also this important bug fix  --
+
+- In Simulation, when plotting metabolites, we fixed an upper/lower case
+sorting bug that sometimes matched the wrong metabolite with the plot.
+
+
+
+Version 0.2.4 - 11 July 2011
+------------------------------------------------------------------------------
+In addition to fixes for several bugs reported by our users, this version 
+contains two significant changes -- 
+
+The first change is that the RFPulse interface now has more flexible and
+smoother run and save options. Specifically --
+-- The Run button on each tab only runs the project up to and including that
+   tab. The new "Run" menu item on the Pulse Project menu will run the whole
+   project all at once.
+-- The new "Save As" menu item (also on the Pulse Project menu) allows you
+   to save the project with a new name and UUID. 
+-- There's a few other changes that we felt made the interface more intiutive.
+
+The second change is that experiments exported to XML now use a much more
+compact format. This saves time and produces much smaller files when 
+exporting large experiments.
+
+
+
+Version 0.2.3 - 15 June 2011
+------------------------------------------------------------------------------
+This is a small update that fixes a dependency problem with 0.2.2.
+
+
+
+Version 0.2.2 - 15 June 2011
+------------------------------------------------------------------------------
+In addition to the usual small enhancements and bug fixes, this version
+contains three important changes --
+
+- Experiments are now stored in a more compact format. For large experiments,
+  this improves database load/save significantly.
+- We fixed an application initialization bug that was hurting performance,
+  especially with large databases.
+- When exporting experiments to ASCII format, phase data is now in degrees
+  instead of radians.
+
+
+
+Version 0.2.1 - 2 June 2011
+------------------------------------------------------------------------------
+In addition to the usual small enhancements and bug fixes, this version
+contains two important changes --
+
+- We improved RFPulse's interpolation algorithm.
+- Simulation now takes advantage of as many CPUs as are available when 
+  building basis functions (i.e. when visualizing an experiment). On 
+  multicore machines, this boosts performance significantly.
+
+
+
+Version 0.2.0 - 4 May 2011
+------------------------------------------------------------------------------
+We are very pleased to announce the first (beta) release of RFPulse. Stated in
+as few words as possible, RFPulse allows you to create and visualize RF pulses
+in a linear, step-by-step process. That very short description leaves a lot 
+out, though, because RFPulse offers many other features to support that basic
+process. We encourage you to visit the RFPulse Web site for more information:
+http://scion.duhs.duke.edu/vespa/rfpulse/
+
+RFPulse is the second application to be released in the Vespa suite. The third
+and final Vespa application (Analysis) will be released later this year.
+
+
+
+Version 0.1.6 - 21 March 2011
+------------------------------------------------------------------------------
+In addition to the usual small enhancements and bug fixes, this version
+contains one new feature. Simulation now takes advantage of as many CPUs as
+are available when running an experiment. On multicore machines, this boosts
+performance significantly.
+
+
+
+Version 0.1.5 - 8 March 2011
+------------------------------------------------------------------------------
+This version has a few changes and bug fixes, mostly related to the 3rd 
+party output feature added in Vespa 0.1.4.
+
+- We added the ability to output Simulation's experiment results to MIDAS XML
+format.
+
+- We fixed a repeating number bug that caused jMRUI output to be incorrect.
+
+- We fixed some bugs in the handling of non-ASCII characters.
+
+
+
+Version 0.1.4 - 2 March 2011
+------------------------------------------------------------------------------
+Added the ability to output Simulation's experiment results to three 3rd 
+party output formats: GAVA, LCModel and jMRUI.
+
+
+
+Version 0.1.3 - 11 February 2011
+------------------------------------------------------------------------------
+This version fixes two obscure but serious bugs. 
+
+- If an existing, unfrozen experiment was re-opened and metabolites added and
+the experiment re-run, the added metabolites would only be run against the
+single set of loop values [0, 0, 0]. The loop ranges described by the 
+experiment were ignored. This only happened if the experiment was closed and
+then re-opened.
+
+- When the visualize tab plotted metabolites under OS X, they were in an
+arbitrary order that often didn't match the order in the "Metabolites to Plot"
+list.
+
+
+
+Version 0.1.2 - 9 February 2011
+------------------------------------------------------------------------------
+This version contains a number of internal changes and one very visible
+change. We changed the interface between Simulation and pulse sequence code.
+The new interface is *not* backwards compatible. Your pulse sequences will
+need to be updated before they'll work with the new interface.
+
+The change is described here:
+http://scion.duhs.duke.edu/vespa/project/wiki/PulseSequenceInterfaceChange
+
+Here's a practical guide to upgrading:
+http://scion.duhs.duke.edu/vespa/project/wiki/UpgradingTo_0_1_2
+
+Also, there's this notable bug fix -- 
+
+- Fixed a typo in the default binning code given to new pulse sequences.
+The typo raised an error when the binning code was run.
+
+
+
+Version 0.1.1 - 20 Dec 2010
+------------------------------------------------------------------------------
+This version contains some new small features and many small bug fixes.
+The highlights are --
+
+- We fixed the spectral display bug reported by several users.
+- The basis spectra resolution parameters have been moved to their own dialog.
+  Changing them incrementally on the main visualization screen didn't work so 
+  well because of the big CPU hit required for every change.
+- Simulation now displays an error reporting dialog if an unexpected error 
+  occurs.
+
+
+
+Version 0.1.0 - 12 Nov 2010
+------------------------------------------------------------------------------
+This is the first (beta) version of Vespa.
