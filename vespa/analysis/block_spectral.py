@@ -828,7 +828,7 @@ class BlockSpectral(block_spectral_identity.BlockSpectralIdentity):
             self.frequency_shift_lock = util_xml.BOOLEANS[source.findtext("frequency_shift_lock")]
             self.phase_lock           = util_xml.BOOLEANS[source.findtext("phase_lock")]
             self.phase_1_lock_at_zero = util_xml.BOOLEANS[source.findtext("phase_1_lock_at_zero")]
-            self.kiss_off_correction  = util_xml.BOOLEANS[source.findtext("kiss_off_correction")]
+            self.kiss_off_correction  = False # FIXME bjs util_xml.BOOLEANS[source.findtext("kiss_off_correction")]
 
             temp = source.find("phase_0")
             self._phase_0 = util_xml.element_to_numpy_array(temp)

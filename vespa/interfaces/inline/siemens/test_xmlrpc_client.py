@@ -62,6 +62,7 @@ def main():
     scans, evps = twix_parser.read(fname)
     d = _extract_parameters(evps)
     datain = _read_data(scans, d)
+    datain = datain.astype(np.complex64)    # same as scanner (I think)
 
     datain = datain.tobytes()
     datain = xmlrpclib.Binary(datain)
@@ -73,6 +74,9 @@ def main():
     acqdim0     = ncol * int(d["readout_os"])
     ncha        = d["ncoil"]
     nave        = d["navg"]
+    navg        = int(len(scans) / ncoil)       # include nref+nprep
+    nprep       = d["nprep"]
+    nref        = d["nref"]
     os_remove   = d["remove_os"]
     nleft       = scans[0].free_parameters[0]
     nright      = 0
@@ -85,13 +89,14 @@ def main():
     seqstr      = d["sequence_type"]
     tap_point   = 1
 
-    buf = s.vespa_process(acqdim0, ncha, nave, os_remove, nleft, nright, os_factor, dwell, freq, delta, seqte, nucstr, seqstr, tap_point, datain)
+    buf = s.vespa_process(acqdim0, ncha, nave, nprep, nref, os_remove, nleft, nright, os_factor, dwell, freq, delta, seqte, nucstr, seqstr, tap_point, datain)
 
     bob = 10
 
 
     nbuf = buf
-    plt.imsave('name.png', nbuf)
+    fname = os.path.join(base_path, 'vespa_inline_result_out.png')
+    plt.imsave(fname, nbuf)
 
 
     bob += 1

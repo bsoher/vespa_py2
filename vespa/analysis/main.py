@@ -220,7 +220,7 @@ class Main(wx.Frame):
 
     def on_import_mrs_data_raw(self, event):
         datasets = self._import_viff_raw_file()
-        if datasets:
+        if datasets[0] is not None:
             # although this format only allows us to import single files, it
             # still returns the one dataset in a list to mesh with the
             # functionality in add_dataset_tab() to deal with multiple files

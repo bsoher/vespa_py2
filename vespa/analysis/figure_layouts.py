@@ -13,11 +13,13 @@ import xml.etree.cElementTree as ElementTree
 #mpl.use('Agg')
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.table as mtable
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter, NullFormatter, MaxNLocator,\
     AutoMinorLocator
 
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.backends.backend_pdf import PdfPages
 
 from matplotlib.backends import pylab_setup
@@ -53,18 +55,20 @@ def _pretty_space_text(left='', middle='', right='', total_width=77):
     return msg1
 
 
-def null_call(dataset,   viffpath='', 
-                        vespa_version='',
-                        timestamp='',
-                        fontname='Courier New',
-                        minplot=0.1,
-                        maxplot=4.9,
-                        nobase=False,
-                        extfig=None,
-                        fixphase=False,
-                        verbose=False, 
-                        debug=False,
-                        quantvals=False):
+def null_call(  dataset,
+                viffpath='',
+                vespa_version='',
+                timestamp='',
+                fontname='Courier New',
+                minplot=0.1,
+                maxplot=4.9,
+                nobase=False,
+                extfig=None,
+                fixphase=False,
+                verbose=False,
+                debug=False,
+                quantvals=False,
+                dpi=None):
     return []
 
 
@@ -110,19 +114,103 @@ def png_error(errmsg,
     return [fig, ]
 
 
-def lcm_like(dataset,   viffpath='', 
-                        vespa_version='',
-                        timestamp='',
-                        fontname='Courier New',
-                        minplot=0.1,
-                        maxplot=4.9,
-                        nobase=False,
-                        extfig=None,
-                        fixphase=False,
-                        verbose=False, 
-                        debug=False,
-                        quantvals=False,
-                        voxel=None):
+def inline_error(   errmsg,
+                    fdatasets,
+                    fpresets,
+                    trace,
+                    vespa_version='',
+                    timestamp='',
+                    fontname='Courier New',
+                    dpi=None):
+
+    # Print Control Setting ----------------------
+
+    if vespa_version == '':
+        vespa_version = util_misc.get_vespa_version() + ' (runtime)'
+
+    if timestamp == '':
+        timestamp = util_time.now().isoformat()
+
+    #--------------------------------------------------------------------------
+    # Gather information about the loaded data and presets
+
+    fdata = dict(fdatasets)
+    for key in list(fdata.keys()):
+        if fdata[key] is None: fdata[key] = 'None'
+    fpre = dict(fpresets)
+    for key in list(fpre.keys()):
+        if fpre[key] is None: fpre[key] = 'None'
+
+    msg  = 'Data Metab: '  + fdata['metab'] + '\n'
+    msg += 'Data Water: '  + fdata['water'] + '\n'
+    msg += 'Data ECC  : '  + fdata['ecc']   + '\n'
+    msg += 'Data Coil : '  + fdata['coil']  + '\n'
+    msg += '\n'
+    msg += 'Preset Metab: ' + fpre['metab'] + '\n'
+    msg += 'Preset Water: ' + fpre['water'] + '\n'
+    msg += 'Preset ECC  : ' + fpre['ecc']   + '\n'
+    msg += 'Preset Coil : ' + fpre['coil']  + '\n'
+
+    middle = u"Fitting Failed - Error Report"
+    msg1 = _pretty_space_text(u"Vespa-Analysis Version: %s" % (vespa_version,), middle,
+                              u"Processing Timestamp: %s" % (timestamp,), total_width=62)
+
+    if len(errmsg.args)==1:
+        msg2 = msg + u"\n\n" + u"Error Message : %s " % (errmsg.args[0], ) + u"\n\n" + "Traceback: \n"
+    else:
+        msg2 = msg + u"\n\n" + u"Error Message : %s, %s " % (errmsg.args[0][0], errmsg.args[0][1] ) + u"\n\n" + "Traceback: \n"
+        for item in errmsg.args[0][2:]:
+            msg2 += item + "\n"
+
+    msg2 += trace
+
+    # Create the figure
+    fig = mpl.figure.Figure(figsize=(10.24, 10.24), facecolor='white', dpi=dpi)
+    # A canvas must be manually attached to the figure (pyplot would automatically
+    # do it).  This is done by instantiating the canvas with the figure as
+    # argument.
+    canvas = FigureCanvasAgg(fig)
+
+    fig.subplots_adjust(hspace=0.001)
+    local_grey = (10. / 255., 10. / 255., 10. / 255.)  # used to tweak font color locally
+
+    fig.text(0.042, 0.94, msg1, wrap=True,
+                horizontalalignment='left', verticalalignment='top',
+                fontsize=8, fontname=fontname)
+
+    fig.text(0.042, 0.89, msg2, wrap=True,
+                horizontalalignment='left', verticalalignment='top',
+                fontsize=8, fontname=fontname)
+
+    # fig.text(0.042, 0.65, msg2, wrap=True,
+    #             horizontalalignment='left', verticalalignment='top',
+    #             fontsize=8, fontname=fontname)
+
+    # fig.text(0.042, 0.55, trace, wrap=True,
+    #             horizontalalignment='left', verticalalignment='top',
+    #             fontsize=8, fontname=fontname)
+
+    fig.canvas.draw()
+
+    return [fig, ]
+
+
+def lcm_like(   dataset,
+                viffpath='',
+                vespa_version='',
+                timestamp='',
+                fontname='Courier New',
+                minplot=0.1,
+                maxplot=4.9,
+                nobase=False,
+                extfig=None,
+                fixphase=False,
+                verbose=False,
+                debug=False,
+                quantvals=False,
+                voxel=None,
+                dpi=None,
+                reg_paper=False):
     """
     Some typical save type formats = 'svg' 'eps' 'pdf' 'png' 'raw' 'rgba' 'ps' 'pgf' etc.
     Typical fontnames  'Consolas' 'Calibri' 'Courier New' 'Times New Roman'
@@ -156,9 +244,11 @@ def lcm_like(dataset,   viffpath='',
     # Process 'fit' block to get results --------------------------------------
 
     key = 'fit'
+    nmet = 1
     if key in dataset.blocks.keys():
         block = dataset.blocks[key]
         results = block.chain.run([voxel,], entry='output_refresh')
+        nmet = block.chain.nmet
 
         lw    = results['fitted_lw']
         lwmin = results['minmaxlw'][0]
@@ -187,12 +277,16 @@ def lcm_like(dataset,   viffpath='',
 
     if fixphase:
         x,y,z = voxel
-        ph0  = -block.fit_results[-2,x,y,z]
-        ph1  = -block.fit_results[-1,x,y,z]
+        if 'bspline_fixed_knot' in block.set.baseline_method:
+            ph0  = -block.fit_results[-4,x,y,z]
+            ph1  = -block.fit_results[-3,x,y,z]
+        else:
+            ph0  = -block.fit_results[-2,x,y,z]
+            ph1  = -block.fit_results[-1,x,y,z]
         piv  = (dim0/2.0) - (dataset.frequency*(dataset.phase_1_pivot - dataset.resppm)/(dataset.sw/dim0))
         arr1 = (np.arange(dim0) - piv)/dim0
         ph0  = ph0 * DTOR
-        ph1  = ph1 * DTOR * arr1
+        ph1  = ph1 * arr1 * DTOR
         phase  = np.exp(1j * (ph0 + ph1))
         freq  *= phase
         base  *= phase
@@ -214,8 +308,10 @@ def lcm_like(dataset,   viffpath='',
 
     # Create the figure
     if extfig is None:
-        #fig = plt.figure(figsize=(11,8.5), facecolor='white')
-        fig = plt.figure(figsize=(10.24, 10.24), facecolor='white')
+        if reg_paper:
+            fig = plt.figure(figsize=(11,8.5), facecolor='white')
+        else:
+            fig = plt.figure(figsize=(10.24, 10.24), facecolor='white')
     else:
         fig = extfig
         
@@ -394,7 +490,8 @@ def lcm_multipage_pdf( dataset,
                          verbose=False, 
                          debug=False,
                          quantvals=False,
-                         voxel=None):
+                         voxel=None,
+                         dpi=None):
     """
     Some typical save type formats = 'svg' 'eps' 'pdf' 'png' 'raw' 'rgba' 'ps' 'pgf' etc.
     Typical fontnames  'Consolas' 'Calibri' 'Courier New' 'Times New Roman'
@@ -476,12 +573,16 @@ def lcm_multipage_pdf( dataset,
 
     if fixphase:
         x,y,z = voxel
-        ph0  = -block.fit_results[-2,x,y,z]
-        ph1  = -block.fit_results[-1,x,y,z]
+        if 'bspline_fixed_knot' in block.set.baseline_method:
+            ph0  = -block.fit_results[-4,x,y,z]
+            ph1  = -block.fit_results[-3,x,y,z]
+        else:
+            ph0  = -block.fit_results[-2,x,y,z]
+            ph1  = -block.fit_results[-1,x,y,z]
         piv  = (dim0/2.0) - (dataset.frequency*(dataset.phase_1_pivot - dataset.resppm)/(dataset.sw/dim0))
         arr1 = (np.arange(dim0) - piv)/dim0
         ph0  = ph0 * DTOR
-        ph1  = ph1 * DTOR * arr1
+        ph1  = ph1 * arr1 * DTOR
         phase  = np.exp(1j * (ph0 + ph1))
         freq  *= phase
         base  *= phase
@@ -518,7 +619,8 @@ def lcm_multipage_pdf( dataset,
                     fixphase=fixphase,
                     verbose=verbose, 
                     debug=debug,
-                    quantvals=quantvals)
+                    quantvals=quantvals,
+                    reg_paper=True)
      
     all_figs.append(fig[0])
 
@@ -637,7 +739,8 @@ def analysis_plot2(dataset, viffpath='',
                             verbose=False, 
                             debug=False,
                             quantvals=False,
-                            voxel=None):
+                            voxel=None,
+                            dpi=None):
     """
     Some typical save type formats = 'svg' 'eps' 'pdf' 'png' 'raw' 'rgba' 'ps' 'pgf' etc.
     Typical fontnames  'Consolas' 'Calibri' 'Courier New' 'Times New Roman'
@@ -702,8 +805,12 @@ def analysis_plot2(dataset, viffpath='',
 
     if fixphase:
         x,y,z = voxel
-        ph0  = -block.fit_results[-2,x,y,z]
-        ph1  = -block.fit_results[-1,x,y,z]
+        if 'bspline_fixed_knot' in block.set.baseline_method:
+            ph0  = -block.fit_results[-4,x,y,z]
+            ph1  = -block.fit_results[-3,x,y,z]
+        else:
+            ph0  = -block.fit_results[-2,x,y,z]
+            ph1  = -block.fit_results[-1,x,y,z]
         piv  = (dim0/2.0) - (dataset.frequency*(dataset.phase_1_pivot - dataset.resppm)/(dataset.sw/dim0))
         arr1 = (np.arange(dim0) - piv)/dim0
         ph0  = ph0 * DTOR
@@ -922,7 +1029,8 @@ def analysis_plot4(dataset, viffpath='',
                             verbose=False, 
                             debug=False,
                             quantvals=False,
-                            voxel=None):
+                            voxel=None,
+                            dpi=None):
     """
     Some typical save type formats = 'svg' 'eps' 'pdf' 'png' 'raw' 'rgba' 'ps' 'pgf' etc.
     Typical fontnames  'Consolas' 'Calibri' 'Courier New' 'Times New Roman'
@@ -986,8 +1094,12 @@ def analysis_plot4(dataset, viffpath='',
 
     if fixphase:
         x,y,z = voxel
-        ph0  = -block.fit_results[-2,x,y,z]
-        ph1  = -block.fit_results[-1,x,y,z]
+        if 'bspline_fixed_knot' in block.set.baseline_method:
+            ph0  = -block.fit_results[-4,x,y,z]
+            ph1  = -block.fit_results[-3,x,y,z]
+        else:
+            ph0  = -block.fit_results[-2,x,y,z]
+            ph1  = -block.fit_results[-1,x,y,z]
         piv  = (dim0/2.0) - (dataset.frequency*(dataset.phase_1_pivot - dataset.resppm)/(dataset.sw/dim0))
         arr1 = (np.arange(dim0) - piv)/dim0
         ph0  = ph0 * DTOR
@@ -1294,8 +1406,12 @@ def analysis_brp_generic(dataset,
 
     if fixphase:
         x,y,z = voxel
-        ph0  = -block.fit_results[-2,x,y,z]
-        ph1  = -block.fit_results[-1,x,y,z]
+        if 'bspline_fixed_knot' in block.set.baseline_method:
+            ph0  = -block.fit_results[-4,x,y,z]
+            ph1  = -block.fit_results[-3,x,y,z]
+        else:
+            ph0  = -block.fit_results[-2,x,y,z]
+            ph1  = -block.fit_results[-1,x,y,z]
         piv  = (dim0/2.0) - (dataset.frequency*(dataset.phase_1_pivot - dataset.resppm)/(dataset.sw/dim0))
         arr1 = (np.arange(dim0) - piv)/dim0
         ph0  = ph0 * DTOR
@@ -1545,7 +1661,8 @@ def debug_plot4(dataset,
                 verbose=False, 
                 debug=False,
                 quantvals=False,
-                voxel=None):
+                voxel=None,
+                dpi=None):
     """
     Some typical save type formats = 'svg' 'eps' 'pdf' 'png' 'raw' 'rgba' 'ps' 'pgf' etc.
     Typical fontnames  'Consolas' 'Calibri' 'Courier New' 'Times New Roman'
@@ -1625,8 +1742,12 @@ def debug_plot4(dataset,
 
     if fixphase:
         x,y,z = voxel
-        ph0  = -block.fit_results[-2,x,y,z]
-        ph1  = -block.fit_results[-1,x,y,z]
+        if 'bspline_fixed_knot' in block.set.baseline_method:
+            ph0  = -block.fit_results[-4,x,y,z]
+            ph1  = -block.fit_results[-3,x,y,z]
+        else:
+            ph0  = -block.fit_results[-2,x,y,z]
+            ph1  = -block.fit_results[-1,x,y,z]
         piv  = (dim0/2.0) - (dataset.frequency*(dataset.phase_1_pivot - dataset.resppm)/(dataset.sw/dim0))
         arr1 = (np.arange(dim0) - piv)/dim0
         ph0  = ph0 * DTOR
@@ -1874,7 +1995,8 @@ def debug_multipage_pdf( dataset,
                          verbose=False, 
                          debug=False,
                          quantvals=False,
-                         voxel=None):
+                         voxel=None,
+                         dpi=None):
     """
     Some typical save type formats = 'svg' 'eps' 'pdf' 'png' 'raw' 'rgba' 'ps' 'pgf' etc.
     Typical fontnames  'Consolas' 'Calibri' 'Courier New' 'Times New Roman'
@@ -1956,8 +2078,12 @@ def debug_multipage_pdf( dataset,
 
     if fixphase:
         x,y,z = voxel
-        ph0  = -block.fit_results[-2,x,y,z]
-        ph1  = -block.fit_results[-1,x,y,z]
+        if 'bspline_fixed_knot' in block.set.baseline_method:
+            ph0  = -block.fit_results[-4,x,y,z]
+            ph1  = -block.fit_results[-3,x,y,z]
+        else:
+            ph0  = -block.fit_results[-2,x,y,z]
+            ph1  = -block.fit_results[-1,x,y,z]
         piv  = (dim0/2.0) - (dataset.frequency*(dataset.phase_1_pivot - dataset.resppm)/(dataset.sw/dim0))
         arr1 = (np.arange(dim0) - piv)/dim0
         ph0  = ph0 * DTOR

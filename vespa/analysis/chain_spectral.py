@@ -77,6 +77,7 @@ class ChainSpectral(chain_spectral_identity.ChainSpectralIdentity):
 
             self.svd_data              = np.zeros(spectral_dim0,      complex)
             self.svd_peaks_checked     = np.zeros((20,spectral_dim0), complex)
+            self.svd_fids_checked      = np.zeros(spectral_dim0, complex)
             self.svd_fids_all          = np.zeros((20,self.raw_dim0), complex)
             self.svd_peaks_checked_sum = np.zeros(spectral_dim0,      complex)
                         
